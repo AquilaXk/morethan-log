@@ -3,10 +3,7 @@ import { CONFIG } from "site.config"
 import dynamic from "next/dynamic"
 
 const UtterancesComponent = dynamic(
-  () => {
-    return import("./Utterances")
-  },
-  { ssr: false }
+  () => import("./Utterances")
 )
 const CusdisComponent = dynamic(
   () => {
