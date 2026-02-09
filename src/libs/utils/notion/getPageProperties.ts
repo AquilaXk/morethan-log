@@ -9,74 +9,87 @@ async function getPageProperties(
   schema: CollectionPropertySchemaMap
 ) {
   const api = new NotionAPI()
-  const rawProperties = Object.entries(block?.[id]?.value?.properties || [])
+
+  // 1. 데이터 포장지 벗기기
+  const rawBlock = block?.[id] as any
+  const blockValue = rawBlock?.value?.value || rawBlock?.value || rawBlock
+
+  if (!blockValue || !blockValue.properties || !schema) {
+    return {}
+  }
+
+  const rawProperties = blockValue.properties
   const excludeProperties = ["date", "select", "multi_select", "person", "file"]
   const properties: any = {}
-  for (let i = 0; i < rawProperties.length; i++) {
-    const [key, val]: any = rawProperties[i]
-    properties.id = id
-    if (schema[key]?.type && !excludeProperties.includes(schema[key].type)) {
-      properties[schema[key].name] = getTextContent(val)
-    } else {
-      switch (schema[key]?.type) {
-        case "file": {
-          try {
-            const Block = block?.[id].value
-            const url: string = val[0][1][0][1]
-            const newurl = customMapImageUrl(url, Block)
-            properties[schema[key].name] = newurl
-          } catch (error) {
-            properties[schema[key].name] = undefined
-          }
-          break
-        }
-        case "date": {
-          const dateProperty: any = getDateValue(val)
-          delete dateProperty.type
-          properties[schema[key].name] = dateProperty
-          break
-        }
-        case "select": {
-          const selects = getTextContent(val)
-          if (selects?.length) {
-            properties[schema[key].name] = selects.split(",")
-          }
-          break
-        }
-        case "multi_select": {
-          const selects = getTextContent(val)
-          if (selects?.length) {
-            properties[schema[key].name] = selects.split(",")
-          }
-          break
-        }
-        case "person": {
-          const rawUsers = val.flat()
 
-          const users = []
-          for (let i = 0; i < rawUsers.length; i++) {
-            if (rawUsers[i][0][1]) {
-              const userId = rawUsers[i][0]
-              const res: any = await api.getUsers(userId)
-              const resValue =
-                res?.recordMapWithRoles?.notion_user?.[userId[1]]?.value
-              const user = {
-                id: resValue?.id,
-                name:
-                  resValue?.name ||
-                  `${resValue?.family_name}${resValue?.given_name}` ||
-                  undefined,
-                profile_photo: resValue?.profile_photo || null,
-              }
-              users.push(user)
+  properties.id = id
+
+  // 2. 스키마 매핑
+  for (const key of Object.keys(schema)) {
+    try {
+      const propertySchema = schema[key]
+      const propertyName = propertySchema.name
+      const propertyType = propertySchema.type
+      const rawValue = rawProperties[key]
+
+      if (!rawValue) continue
+
+      if (propertyType && !excludeProperties.includes(propertyType)) {
+        properties[propertyName] = getTextContent(rawValue)
+      } else {
+        switch (propertyType) {
+          case "file": {
+            try {
+              let fileBlock = rawBlock?.value?.value || rawBlock?.value
+              const url: string = rawValue[0][1][0][1]
+              const newurl = customMapImageUrl(url, fileBlock)
+              properties[propertyName] = newurl
+            } catch (error) {
+              properties[propertyName] = undefined
             }
+            break
           }
-          properties[schema[key].name] = users
-          break
+          case "date": {
+            const dateProperty: any = getDateValue(rawValue)
+            delete dateProperty.type
+            properties[propertyName] = dateProperty
+            break
+          }
+          case "select":
+          case "multi_select": {
+            const selects = getTextContent(rawValue)
+            properties[propertyName] = selects ? selects.split(",") : []
+            break
+          }
+          case "person": {
+            const rawUsers = rawValue.flat()
+            const users = []
+            for (let i = 0; i < rawUsers.length; i++) {
+              if (rawUsers[i][0][1]) {
+                const userId = rawUsers[i][0]
+                const res: any = await api.getUsers(userId)
+                const resValue =
+                  res?.recordMapWithRoles?.notion_user?.[userId[1]]?.value
+                const user = {
+                  id: resValue?.id,
+                  name:
+                    resValue?.name ||
+                    `${resValue?.family_name}${resValue?.given_name}` ||
+                    undefined,
+                  profile_photo: resValue?.profile_photo || null,
+                }
+                users.push(user)
+              }
+            }
+            properties[propertyName] = users
+            break
+          }
+          default:
+            break
         }
-        default:
-          break
       }
+    } catch (error) {
+      continue
     }
   }
   return properties

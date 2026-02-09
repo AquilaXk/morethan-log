@@ -20,55 +20,55 @@ const filter: FilterPostsOptions = {
 export const getStaticPaths = async () => {
   const posts = await getPosts()
   const filteredPost = filterPosts(posts, filter)
-
   return {
     paths: filteredPost.map((row) => `/${row.slug}`),
-    fallback: true,
+    fallback: "blocking",
   }
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {
-  const slug = context.params?.slug
-
+  const slug = context.params?.slug as string
   const posts = await getPosts()
+
   const feedPosts = filterPosts(posts)
   await queryClient.prefetchQuery(queryKey.posts(), () => feedPosts)
 
   const detailPosts = filterPosts(posts, filter)
   const postDetail = detailPosts.find((t: any) => t.slug === slug)
-  const recordMap = await getRecordMap(postDetail?.id!)
 
-  await queryClient.prefetchQuery(queryKey.post(`${slug}`), () => ({
-    ...postDetail,
-    recordMap,
-  }))
+  if (!postDetail) {
+    return { notFound: true }
+  }
 
-  return {
-    props: {
-      dehydratedState: dehydrate(queryClient),
-    },
-    revalidate: CONFIG.revalidateTime,
+  try {
+    const recordMap = await getRecordMap(postDetail.id)
+    await queryClient.prefetchQuery(queryKey.post(`${slug}`), () => ({
+      ...postDetail,
+      recordMap,
+    }))
+    return {
+      props: { dehydratedState: dehydrate(queryClient) },
+      revalidate: CONFIG.revalidateTime,
+    }
+  } catch (error) {
+    console.error("❌ [Props] 에러 발생:", error)
+    return { notFound: true }
   }
 }
 
 const DetailPage: NextPageWithLayout = () => {
   const post = usePostQuery()
-
   if (!post) return <CustomError />
 
-  const image =
-    post.thumbnail ??
-    CONFIG.ogImageGenerateURL ??
-    `${CONFIG.ogImageGenerateURL}/${encodeURIComponent(post.title)}.png`
-
   const date = post.date?.start_date || post.createdTime || ""
-
   const meta = {
     title: post.title,
     date: new Date(date).toISOString(),
-    image: image,
+    image:
+      post.thumbnail ??
+      `${CONFIG.ogImageGenerateURL}/${encodeURIComponent(post.title)}.png`,
     description: post.summary || "",
-    type: post.type[0],
+    type: Array.isArray(post.type) ? post.type[0] : post.type,
     url: `${CONFIG.link}/${post.slug}`,
   }
 
@@ -80,8 +80,5 @@ const DetailPage: NextPageWithLayout = () => {
   )
 }
 
-DetailPage.getLayout = (page) => {
-  return <>{page}</>
-}
-
+DetailPage.getLayout = (page) => <>{page}</>
 export default DetailPage

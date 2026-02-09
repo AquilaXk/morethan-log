@@ -9,32 +9,40 @@ const initialOption: FilterPostsOptions = {
   acceptStatus: ["Public"],
   acceptType: ["Post"],
 }
+
 const current = new Date()
-const tomorrow = new Date(current)
-tomorrow.setDate(tomorrow.getDate() + 1)
-tomorrow.setHours(0, 0, 0, 0)
+const limitDate = new Date(current.getTime() + 24 * 60 * 60 * 1000)
 
 export function filterPosts(
   posts: TPosts,
   options: FilterPostsOptions = initialOption
 ) {
   const { acceptStatus = ["Public"], acceptType = ["Post"] } = options
-  const filteredPosts = posts
-    // filter data
+
+  if (!posts || !Array.isArray(posts)) return []
+
+  return posts
     .filter((post) => {
+      // 1. 필수 데이터 및 날짜 체크
+      if (!post.title || !post.slug) return false
+
       const postDate = new Date(post?.date?.start_date || post.createdTime)
-      if (!post.title || !post.slug || postDate > tomorrow) return false
+      if (postDate > limitDate) return false
+
       return true
     })
-    // filter status
     .filter((post) => {
-      const postStatus = post.status[0]
-      return acceptStatus.includes(postStatus)
+      // 2. Status 체크
+      const postStatus = Array.isArray(post.status)
+        ? post.status[0]
+        : post.status
+      if (!postStatus) return false
+      return (acceptStatus as string[]).includes(postStatus)
     })
-    // filter type
     .filter((post) => {
-      const postType = post.type[0]
-      return acceptType.includes(postType)
+      // 3. Type 체크
+      const postType = Array.isArray(post.type) ? post.type[0] : post.type
+      if (!postType) return false
+      return (acceptType as string[]).includes(postType)
     })
-  return filteredPosts
 }
