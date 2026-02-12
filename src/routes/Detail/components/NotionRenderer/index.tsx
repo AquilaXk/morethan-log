@@ -90,6 +90,35 @@ const StyledWrapper = styled.div`
     width: 100%;
   }
 
+  .notion-callout {
+    border-width: 2px;
+    border-radius: 12px;
+    border-color: ${({ theme }) =>
+      theme.scheme === "dark"
+        ? "rgba(255, 255, 255, 0.16)"
+        : "rgba(0, 0, 0, 0.12)"};
+  }
+
+  .notion-table-view {
+    border: 1px solid
+      ${({ theme }) =>
+        theme.scheme === "dark"
+          ? "rgba(255, 255, 255, 0.14)"
+          : "rgba(0, 0, 0, 0.12)"};
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .notion-simple-table {
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .notion-code,
+  pre[class*="language-"] {
+    border-radius: 12px;
+  }
+
   .notion.dark-mode .notion-code,
   .notion.dark-mode pre[class*="language-"] {
     background-color: #1f232a;
