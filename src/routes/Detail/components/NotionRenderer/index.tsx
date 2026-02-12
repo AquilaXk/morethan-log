@@ -89,4 +89,14 @@ const StyledWrapper = styled.div`
   .notion-list {
     width: 100%;
   }
+
+  .notion.dark-mode .notion-code,
+  .notion.dark-mode pre[class*="language-"] {
+    background-color: #1f232a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .notion.dark-mode :not(pre) > code[class*="language-"] {
+    background-color: #1f232a;
+  }
 `

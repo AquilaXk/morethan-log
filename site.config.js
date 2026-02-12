@@ -2,7 +2,8 @@ const CONFIG = {
   // profile setting (required)
   profile: {
     name: "aquilaXk",
-    image: "https://avatars.githubusercontent.com/u/186246795?s=400&u=b1604e2414a349d30f182809a1061f90a0558a9c&v=4", // If you want to create your own notion avatar, check out https://notion-avatar.vercel.app
+    image:
+      "https://avatars.githubusercontent.com/u/186246795?s=400&u=b1604e2414a349d30f182809a1061f90a0558a9c&v=4", // If you want to create your own notion avatar, check out https://notion-avatar.vercel.app
     role: "backend developer",
     bio: "I develop everything using node.",
     email: "illusiveman7@gmail.com",
@@ -54,11 +55,21 @@ const CONFIG = {
     },
   },
   utterances: {
-    enable: true,
+    enable: false,
     config: {
       repo: process.env.NEXT_PUBLIC_UTTERANCES_REPO || "aquilaXk/aquila-log",
       "issue-term": "og:title",
       label: "💬 Utterances",
+    },
+  },
+  giscus: {
+    enable: true,
+    config: {
+      repo: "aquilaXk/aquila-log",
+      repositoryId: "R_kgDORJ7GcA",
+      category: "Announcements",
+      categoryId: "DIC_kwDORJ7GcM4C2ML9",
+      lang: "ko",
     },
   },
   cusdis: {
