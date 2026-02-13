@@ -99,24 +99,21 @@ const StyledWrapper = styled.div`
         : "rgba(0, 0, 0, 0.12)"};
   }
 
-  .notion-table-view {
-    border: 2px solid
-      ${({ theme }) =>
-        theme.scheme === "dark"
-          ? "rgba(255, 255, 255, 0.2)"
-          : "rgba(0, 0, 0, 0.16)"};
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
+  .notion-table,
+  .notion-table-view,
   .notion-simple-table {
     border: 2px solid
       ${({ theme }) =>
         theme.scheme === "dark"
-          ? "rgba(255, 255, 255, 0.2)"
-          : "rgba(0, 0, 0, 0.16)"};
-    border-radius: 12px;
+          ? "rgba(255, 255, 255, 0.28)"
+          : "rgba(0, 0, 0, 0.2)"};
+    border-radius: 14px;
     overflow: hidden;
+  }
+
+  .notion-simple-table {
+    border-collapse: separate;
+    border-spacing: 0;
   }
 
   .notion-code,
