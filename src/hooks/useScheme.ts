@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getCookie, setCookie } from "cookies-next"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { CONFIG } from "site.config"
 import { queryKey } from "src/constants/queryKey"
 import { SchemeType } from "src/types"
@@ -11,7 +11,7 @@ const useScheme = (): [SchemeType, SetScheme] => {
   const queryClient = useQueryClient()
   const followsSystemTheme = CONFIG.blog.scheme === "system"
 
-  const { data } = useQuery({
+  const { data } = useQuery<SchemeType>({
     queryKey: queryKey.scheme(),
     enabled: false,
     initialData: followsSystemTheme
@@ -19,14 +19,13 @@ const useScheme = (): [SchemeType, SetScheme] => {
       : (CONFIG.blog.scheme as SchemeType),
   })
 
-  const setScheme = (scheme: SchemeType) => {
+  const setScheme = useCallback((scheme: SchemeType) => {
     setCookie("scheme", scheme)
-
     queryClient.setQueryData(queryKey.scheme(), scheme)
-  }
+  }, [queryClient])
 
   useEffect(() => {
-    if (!window) return
+    if (typeof window === "undefined") return
 
     const cachedScheme = getCookie("scheme") as SchemeType
     const defaultScheme = followsSystemTheme
@@ -34,8 +33,11 @@ const useScheme = (): [SchemeType, SetScheme] => {
         ? "dark"
         : "light"
       : data
-    setScheme(cachedScheme || defaultScheme)
-  }, [])
+    const nextScheme = cachedScheme || defaultScheme
+    if (nextScheme !== data) {
+      setScheme(nextScheme)
+    }
+  }, [data, followsSystemTheme, setScheme])
 
   return [data, setScheme]
 }

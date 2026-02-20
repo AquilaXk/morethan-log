@@ -2,6 +2,7 @@ import { CONFIG } from "site.config"
 import { NextPageWithLayout } from "../types"
 import MetaConfig from "src/components/MetaConfig"
 import styled from "@emotion/styled"
+import Image from "next/image"
 
 const AboutPage: NextPageWithLayout = () => {
   const meta = {
@@ -20,9 +21,11 @@ const AboutPage: NextPageWithLayout = () => {
 
           <div className="profile-section">
             <div className="profile-image-wrapper">
-              <img
+              <Image
                 src={CONFIG.profile.image}
                 alt={CONFIG.profile.name}
+                fill
+                sizes="150px"
                 className="profile-image"
               />
             </div>
@@ -131,11 +134,12 @@ const StyledWrapper = styled.div`
       border-radius: 1rem;
 
       .profile-image-wrapper {
-        margin-bottom: 1.5rem;
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto 1.5rem;
         
         .profile-image {
-          width: 150px;
-          height: 150px;
           border-radius: 50%;
           object-fit: cover;
           border: 4px solid ${({ theme }) => theme.colors.gray6};

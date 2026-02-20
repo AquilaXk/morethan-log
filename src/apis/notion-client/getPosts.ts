@@ -2,8 +2,9 @@ import { NotionAPI } from "notion-client"
 import { CONFIG } from "site.config"
 import getPageProperties from "src/libs/utils/notion/getPageProperties"
 import { BlockMap } from "notion-types"
+import { TPost } from "src/types"
 
-export const getPosts = async () => {
+export const getPosts = async (): Promise<TPost[]> => {
   const api = new NotionAPI()
   const pageId = CONFIG.notionConfig.pageId
 
@@ -27,10 +28,9 @@ export const getPosts = async () => {
     }
 
     if (!collectionId || !schema) {
-      console.error(
-        "❌ [getPosts] 유효한 스키마를 찾지 못했습니다. (Page ID 확인 필요)"
+      throw new Error(
+        "[getPosts] 유효한 스키마를 찾지 못했습니다. (Page ID 확인 필요)"
       )
-      return []
     }
 
     // 2. 게시글 ID 목록 추출
@@ -60,7 +60,7 @@ export const getPosts = async () => {
     }
 
     // 3. 데이터 매핑
-    const posts = []
+    const posts: TPost[] = []
     for (const id of pageIds) {
       const blockMap = recordMap.block as BlockMap
       const properties = await getPageProperties(id, blockMap, schema)
@@ -98,7 +98,7 @@ export const getPosts = async () => {
               .slice(0, 10),
           }
         }
-        posts.push(properties)
+        posts.push(properties as TPost)
       }
     }
 
@@ -115,6 +115,6 @@ export const getPosts = async () => {
     return posts
   } catch (error) {
     console.error("❌ [getPosts] 데이터 로드 중 에러 발생:", error)
-    return []
+    throw error
   }
 }

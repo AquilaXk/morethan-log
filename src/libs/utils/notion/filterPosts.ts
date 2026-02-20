@@ -10,14 +10,13 @@ const initialOption: FilterPostsOptions = {
   acceptType: ["Post"],
 }
 
-const current = new Date()
-const limitDate = new Date(current.getTime() + 24 * 60 * 60 * 1000)
-
 export function filterPosts(
   posts: TPosts,
   options: FilterPostsOptions = initialOption
 ) {
   const { acceptStatus = ["Public"], acceptType = ["Post"] } = options
+  const now = new Date()
+  const limitDate = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
   if (!posts || !Array.isArray(posts)) return []
 
@@ -27,7 +26,9 @@ export function filterPosts(
       if (!post.title || !post.slug) return false
 
       const postDate = new Date(post?.date?.start_date || post.createdTime)
-      if (postDate > limitDate) return false
+      const postDateMs = postDate.getTime()
+      if (Number.isNaN(postDateMs)) return false
+      if (postDateMs > limitDate.getTime()) return false
 
       return true
     })

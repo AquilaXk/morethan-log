@@ -1,13 +1,12 @@
 export const formatDate = (
-  input: string | number,
+  input: string | number | Date,
   lang: string = "en-US"
 ): string => {
   if (!input) return ""
 
   try {
-    const date = new Date(input)
+    const date = input instanceof Date ? input : new Date(input)
 
-    // Invalid Date 체크
     if (isNaN(date.getTime())) {
       return ""
     }
@@ -19,8 +18,7 @@ export const formatDate = (
     }
 
     return date.toLocaleDateString(lang, options)
-  } catch (error) {
-    console.error("formatDate error:", error)
+  } catch {
     return ""
   }
 }

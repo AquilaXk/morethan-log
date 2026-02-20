@@ -15,11 +15,18 @@ export default async function handler(
 
   try {
     if (path && typeof path === "string") {
-      await res.revalidate(path)
+      const normalizedPath = path.startsWith("/") ? path : `/${path}`
+      await res.revalidate(normalizedPath)
     } else {
       const posts = await getPosts()
-      const revalidateRequests = posts.map((row) =>
-        res.revalidate(`/${row.slug}`)
+      const pathsToRevalidate = new Set<string>(["/"])
+      posts.forEach((row) => {
+        if (row?.slug) {
+          pathsToRevalidate.add(`/${row.slug}`)
+        }
+      })
+      const revalidateRequests = [...pathsToRevalidate].map((targetPath) =>
+        res.revalidate(targetPath)
       )
       await Promise.all(revalidateRequests)
     }
