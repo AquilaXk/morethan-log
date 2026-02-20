@@ -66,13 +66,9 @@ const StyledWrapper = styled.div`
   position: relative;
   margin-top: 2rem;
 
-  @media (min-width: 768px) {
-    margin-left: -4rem;
-  }
-
   .loading-text {
     text-align: center;
-    color: var(--gray9);
+    color: ${({ theme }) => theme.colors.gray10};
     font-size: 0.875rem;
     padding: 2rem 0;
     position: absolute;

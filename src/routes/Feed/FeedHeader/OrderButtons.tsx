@@ -18,7 +18,7 @@ const OrderButtons: React.FC<Props> = () => {
         ...router.query,
         order: value,
       },
-    })
+    }, undefined, { shallow: true, scroll: false })
   }
   return (
     <StyledWrapper>

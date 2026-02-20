@@ -12,8 +12,9 @@ const SearchInput: React.FC<Props> = ({ ...props }) => {
       </div>
       <input
         className="mid"
-        type="text"
+        type="search"
         placeholder="Search Keyword..."
+        aria-label="Search posts by keyword"
         {...props}
       />
     </StyledWrapper>

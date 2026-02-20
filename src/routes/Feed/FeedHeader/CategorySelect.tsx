@@ -24,7 +24,7 @@ const CategorySelect: React.FC<Props> = () => {
         ...router.query,
         category,
       },
-    })
+    }, undefined, { shallow: true, scroll: false })
   }
   return (
     <StyledWrapper>
@@ -35,6 +35,7 @@ const CategorySelect: React.FC<Props> = () => {
           onClick={handleOpen}
           aria-expanded={opened}
           aria-haspopup="listbox"
+          aria-label="Filter posts by category"
         >
           {currentCategory} Posts <MdExpandMore />
         </button>
@@ -46,6 +47,8 @@ const CategorySelect: React.FC<Props> = () => {
               type="button"
               className="item"
               key={key}
+              role="option"
+              aria-selected={key === currentCategory}
               onClick={() => handleOptionClick(key)}
             >
               {`${key} (${data[key]})`}
@@ -75,6 +78,9 @@ const StyledWrapper = styled.div`
   > .content {
     position: absolute;
     z-index: 40;
+    min-width: 14rem;
+    max-height: min(18rem, calc(100vh - 9rem));
+    overflow-y: auto;
     padding: 0.25rem;
     border-radius: 0.75rem;
     background-color: ${({ theme }) => theme.colors.gray2};

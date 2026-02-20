@@ -75,7 +75,8 @@ const StyledWrapper = styled.div`
 
   > .lt {
     display: none;
-    overflow: scroll;
+    overflow: auto;
+    overscroll-behavior: contain;
     position: sticky;
     grid-column: span 2 / span 2;
     top: ${HEADER_HEIGHT - 10}px;
@@ -122,7 +123,8 @@ const StyledWrapper = styled.div`
     }
 
     display: none;
-    overflow: scroll;
+    overflow: auto;
+    overscroll-behavior: contain;
     position: sticky;
     top: ${HEADER_HEIGHT - 10}px;
 

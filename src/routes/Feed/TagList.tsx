@@ -20,7 +20,7 @@ const TagList: React.FC<Props> = () => {
           ...router.query,
           tag: undefined,
         },
-      })
+      }, undefined, { shallow: true, scroll: false })
     }
     // add
     else {
@@ -29,7 +29,7 @@ const TagList: React.FC<Props> = () => {
           ...router.query,
           tag: value,
         },
-      })
+      }, undefined, { shallow: true, scroll: false })
     }
   }
 
@@ -44,6 +44,8 @@ const TagList: React.FC<Props> = () => {
             type="button"
             key={key}
             data-active={key === currentTag}
+            aria-pressed={key === currentTag}
+            aria-label={`Filter by tag: ${key}`}
             onClick={() => handleClickTag(key)}
           >
             {key}
@@ -71,22 +73,21 @@ const StyledWrapper = styled.div`
     display: flex;
     margin-bottom: 1.5rem;
     gap: 0.25rem;
-    overflow: scroll;
-
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    ::-webkit-scrollbar {
-      width: 0;
-      height: 0;
-    }
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    padding-bottom: 0.25rem;
 
     @media (min-width: 1024px) {
       display: block;
+      overflow: visible;
+      padding-bottom: 0;
     }
 
     button {
       display: block;
       text-align: left;
+      white-space: nowrap;
       padding: 0.25rem;
       padding-left: 1rem;
       padding-right: 1rem;

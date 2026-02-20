@@ -9,19 +9,20 @@ type Props = {
 const Tag: React.FC<Props> = ({ children }) => {
   const router = useRouter()
 
-  const handleClick = () => {
+  const handleClick = (event?: React.SyntheticEvent) => {
+    event?.preventDefault()
+    event?.stopPropagation()
     router.push({
       query: {
         ...router.query,
         tag: children,
       },
-    })
+    }, undefined, { shallow: true, scroll: false })
   }
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLSpanElement>) => {
     if (event.key !== "Enter" && event.key !== " ") return
-    event.preventDefault()
-    handleClick()
+    handleClick(event)
   }
 
   return (
