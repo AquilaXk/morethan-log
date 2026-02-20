@@ -98,6 +98,66 @@ const NotionRenderer: FC<Props> = ({ recordMap }) => {
     const applySimpleTableColumnWidths = () => {
       const tables = root.querySelectorAll<HTMLTableElement>(".notion-simple-table")
       tables.forEach((table) => {
+        // Page-link tables (sub-page lists) should keep natural layout;
+        // width autosizing makes one column overly narrow and causes truncation.
+        const hasPageReferences = !!table.querySelector(
+          ".notion-page-link, .notion-link .notion-page-title"
+        )
+        if (hasPageReferences) {
+          const rows = Array.from(table.rows)
+          const colCount = rows.reduce(
+            (max, row) => Math.max(max, row.cells.length),
+            0
+          )
+          const autoSizedColgroup = table.querySelector("colgroup[data-autosize='true']")
+          if (autoSizedColgroup) {
+            autoSizedColgroup.remove()
+          }
+          delete table.dataset.colWidthSignature
+          table.dataset.pageLinkTable = "true"
+
+          const meaningfulColumns = Array.from({ length: colCount }, () => false)
+          rows.forEach((row) => {
+            Array.from(row.cells).forEach((cell, colIdx) => {
+              const text = (cell.textContent || "")
+                .replace(/[\u3164\u200b\u00a0]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim()
+              const hasAnyLink = !!cell.querySelector("a")
+              if (text.length > 0 || hasAnyLink) {
+                meaningfulColumns[colIdx] = true
+              }
+            })
+          })
+
+          const visibleColumns = meaningfulColumns
+            .map((isVisible, idx) => (isVisible ? idx : -1))
+            .filter((idx) => idx >= 0)
+          const effectiveColumns = visibleColumns.length
+            ? visibleColumns
+            : Array.from({ length: colCount }, (_, idx) => idx)
+          const visibleSet = new Set(effectiveColumns)
+
+          // react-notion-x injects inline px widths into each cell.
+          // Normalize these widths and hide fully-empty spacer columns.
+          rows.forEach((row) => {
+            Array.from(row.cells).forEach((cell) => {
+              const cellIdx = cell.cellIndex
+              const isVisibleCell = visibleSet.has(cellIdx)
+              cell.style.removeProperty("width")
+              cell.style.width =
+                isVisibleCell && effectiveColumns.length
+                  ? `${100 / effectiveColumns.length}%`
+                  : "0"
+              cell.style.verticalAlign = "top"
+              cell.style.display = isVisibleCell ? "table-cell" : "none"
+            })
+          })
+          return
+        }
+
+        delete table.dataset.pageLinkTable
+
         const rows = Array.from(table.rows)
         if (!rows.length) return
 
@@ -363,7 +423,7 @@ const StyledWrapper = styled.div`
     border-collapse: separate;
     border-spacing: 0;
     width: 100%;
-    table-layout: fixed;
+    table-layout: auto;
   }
 
   .notion-simple-table td {
@@ -391,6 +451,80 @@ const StyledWrapper = styled.div`
         theme.scheme === "dark"
           ? "rgba(255, 255, 255, 0.22)"
           : "rgba(0, 0, 0, 0.16)"};
+  }
+
+  .notion-simple-table[data-page-link-table="true"] .notion-page-link {
+    height: auto;
+    align-items: flex-start;
+  }
+
+  .notion-simple-table[data-page-link-table="true"] .notion-link {
+    display: block;
+    width: 100%;
+    white-space: normal;
+    border-bottom: 0 none;
+  }
+
+  .notion-simple-table[data-page-link-table="true"] .notion-link:hover {
+    border-bottom: 0 none;
+  }
+
+  .notion-simple-table[data-page-link-table="true"] .notion-page-title {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .notion-simple-table[data-page-link-table="true"] .notion-page-title-text {
+    border-bottom: 0 !important;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .notion-simple-table[data-page-link-table="true"] td {
+    width: auto !important;
+  }
+
+  .notion-row .notion-column {
+    min-width: 0;
+  }
+
+  .notion-column .notion-page-link {
+    height: auto;
+    align-items: flex-start;
+  }
+
+  .notion-column .notion-link {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+    border-bottom: 0 none;
+  }
+
+  .notion-column .notion-link:hover {
+    border-bottom: 0 none;
+  }
+
+  .notion-column .notion-page-title {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: flex-start;
+  }
+
+  .notion-column .notion-page-title-text {
+    border-bottom: 0 !important;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .notion-code,
